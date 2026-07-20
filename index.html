@@ -190,6 +190,8 @@
   tr.atrasada td{background:rgba(239,68,68,.07);}
   td select{padding:6px 8px;font-size:.8rem;}
   .btn-del{background:none;border:1px solid var(--border);color:var(--atrasado);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;}
+  .btn-edit{background:none;border:1px solid var(--border);color:var(--gold);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;margin-right:6px;}
+  .row-actions{display:flex;gap:0;white-space:nowrap;}
   .empty-state{color:var(--muted);text-align:center;padding:40px 0;font-size:.9rem;}
 
   @media (max-width:640px){
@@ -403,6 +405,53 @@
   </div>
 </div>
 
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <span class="close-x" id="editModalClose">✕</span>
+    <h3>Editar postagem</h3>
+    <div class="field" style="margin-top:14px;">
+      <label>Título / descrição do post</label>
+      <input type="text" id="eTitulo">
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Tipo de conteúdo</label>
+        <select id="eTipo">
+          <option>Reels</option>
+          <option>Carrossel</option>
+          <option>Feed</option>
+          <option>Story</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Unidade / Campanha</label>
+        <select id="eUnidade">
+          <option>Sul</option>
+          <option>Leste</option>
+          <option>Sto. André</option>
+          <option>Nações Unidas</option>
+          <option>Institucional</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Data da postagem</label>
+      <input type="date" id="eData">
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="eStatus"></select>
+    </div>
+    <div class="field">
+      <label>Observações</label>
+      <textarea id="eObs"></textarea>
+    </div>
+    <div id="editMsg" style="font-size:.85rem;margin-bottom:10px;"></div>
+    <button class="primary" id="btnSalvarEdicao">Salvar alterações</button>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -464,6 +513,7 @@
     setupForm();
     setupCalendarControls();
     setupDetalhadoFilters();
+    setupEditModal();
     renderCalendar();
     renderDetalhado();
   }
@@ -779,6 +829,15 @@
       statusTd.appendChild(sel);
 
       const delTd = tr.children[6];
+      const actionsWrap = document.createElement('div');
+      actionsWrap.className = 'row-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit';
+      editBtn.textContent = 'Editar';
+      editBtn.addEventListener('click', ()=> openEditModal(o));
+      actionsWrap.appendChild(editBtn);
+
       const delBtn = document.createElement('button');
       delBtn.className = 'btn-del';
       delBtn.textContent = 'Excluir';
@@ -789,10 +848,67 @@
           renderCalendar();
         }
       });
-      delTd.appendChild(delBtn);
+      actionsWrap.appendChild(delBtn);
+      delTd.appendChild(actionsWrap);
 
       tbody.appendChild(tr);
     });
+  }
+
+  // ---------- EDIT MODAL ----------
+  let editingId = null;
+
+  function setupEditModal(){
+    const statusSel = document.getElementById('eStatus');
+    Object.keys(STATUS_LABEL).forEach(s=>{
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = STATUS_LABEL[s];
+      statusSel.appendChild(opt);
+    });
+    document.getElementById('editModalClose').addEventListener('click', ()=>{
+      document.getElementById('editModal').classList.remove('show');
+    });
+    document.getElementById('btnSalvarEdicao').addEventListener('click', salvarEdicao);
+  }
+
+  function openEditModal(o){
+    editingId = o.id;
+    document.getElementById('eTitulo').value = o.titulo || '';
+    document.getElementById('eTipo').value = o.tipo || 'Reels';
+    document.getElementById('eUnidade').value = o.unidade || 'Sul';
+    document.getElementById('eData').value = o.data || '';
+    document.getElementById('eStatus').value = o.status || 'planejado';
+    document.getElementById('eObs').value = o.obs || '';
+    document.getElementById('editMsg').textContent = '';
+    document.getElementById('editModal').classList.add('show');
+  }
+
+  async function salvarEdicao(){
+    const msg = document.getElementById('editMsg');
+    const titulo = document.getElementById('eTitulo').value.trim();
+    if(!titulo){
+      msg.style.color = 'var(--atrasado)';
+      msg.textContent = 'Preencha o título.';
+      return;
+    }
+    msg.style.color = 'var(--muted)';
+    msg.textContent = 'Salvando...';
+    try{
+      await db.collection(COL_OCORRENCIAS).doc(editingId).update({
+        titulo,
+        tipo: document.getElementById('eTipo').value,
+        unidade: document.getElementById('eUnidade').value,
+        data: document.getElementById('eData').value,
+        status: document.getElementById('eStatus').value,
+        obs: document.getElementById('eObs').value.trim()
+      });
+      document.getElementById('editModal').classList.remove('show');
+      renderDetalhado();
+      renderCalendar();
+    }catch(e){
+      msg.style.color = 'var(--atrasado)';
+      msg.textContent = 'Erro ao salvar: ' + e.message;
+    }
   }
 </script>
 </body>
