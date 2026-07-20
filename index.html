@@ -421,17 +421,21 @@
   }
 
   // ---------- FORM ----------
+  function syncDiasSemanaVisibility(){
+    const freq = document.getElementById('fFrequencia').value;
+    document.getElementById('diasSemanaField').style.display = freq === 'semanal' ? 'block' : 'none';
+  }
+
   function setupForm(){
     document.querySelectorAll('input[name=recorrencia]').forEach(r=>{
       r.addEventListener('change', ()=>{
         const isRec = document.querySelector('input[name=recorrencia]:checked').value === 'recorrente';
         document.getElementById('unicaFields').style.display = isRec ? 'none' : 'grid';
         document.getElementById('recFields').style.display = isRec ? 'block' : 'none';
+        if(isRec) syncDiasSemanaVisibility();
       });
     });
-    document.getElementById('fFrequencia').addEventListener('change', (e)=>{
-      document.getElementById('diasSemanaField').style.display = e.target.value === 'semanal' ? 'block' : 'none';
-    });
+    document.getElementById('fFrequencia').addEventListener('change', syncDiasSemanaVisibility);
     document.getElementById('btnSalvar').addEventListener('click', salvarPostagem);
   }
 
