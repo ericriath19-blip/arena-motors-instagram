@@ -20,6 +20,8 @@
     --gold-dim:#cc9f00;
     --planejado:#5c5c56;
     --producao:#3b82f6;
+    --em-aprovacao:#a78bfa;
+    --aprovado:#06b6d4;
     --agendado:#ffe066;
     --publicado:#3ddc97;
     --atrasado:#ff6b4a;
@@ -257,6 +259,8 @@
       <div class="legend">
         <span><span class="dot" style="background:var(--planejado)"></span>Planejado</span>
         <span><span class="dot" style="background:var(--producao)"></span>Em produção</span>
+        <span><span class="dot" style="background:var(--em-aprovacao)"></span>Em aprovação</span>
+        <span><span class="dot" style="background:var(--aprovado)"></span>Aprovado</span>
         <span><span class="dot" style="background:var(--agendado)"></span>Agendado</span>
         <span><span class="dot" style="background:var(--publicado)"></span>Publicado</span>
         <span><span class="dot" style="background:var(--atrasado)"></span>Atrasado</span>
@@ -372,6 +376,8 @@
           <option value="">Todos os status</option>
           <option value="planejado">Planejado</option>
           <option value="producao">Em produção</option>
+          <option value="em_aprovacao">Em aprovação</option>
+          <option value="aprovado">Aprovado</option>
           <option value="agendado">Agendado</option>
           <option value="publicado">Publicado</option>
         </select>
@@ -477,8 +483,8 @@
   const db = firebase.firestore();
   const auth = firebase.auth();
 
-  const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", agendado:"Agendado", publicado:"Publicado"};
-  const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", agendado:"var(--agendado)", publicado:"var(--publicado)"};
+  const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", em_aprovacao:"Em aprovação", aprovado:"Aprovado", agendado:"Agendado", publicado:"Publicado"};
+  const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", em_aprovacao:"var(--em-aprovacao)", aprovado:"var(--aprovado)", agendado:"var(--agendado)", publicado:"var(--publicado)"};
   const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
   const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
