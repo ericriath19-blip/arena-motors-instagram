@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postagens Instagram — Arena Motors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1117;
+    --panel:#171a23;
+    --panel-2:#1d2130;
+    --border:#262b38;
+    --text:#e8e9ed;
+    --muted:#8b90a0;
+    --gold:#d4af37;
+    --gold-dim:#a9872c;
+    --planejado:#6b7280;
+    --producao:#3b82f6;
+    --agendado:#f59e0b;
+    --publicado:#22c55e;
+    --atrasado:#ef4444;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;}
+
+  /* --- Login gate --- */
+  #gate{
+    position:fixed;inset:0;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    gap:16px;z-index:999;
+  }
+  #gate h1{font-size:1.4rem;color:var(--gold);letter-spacing:.5px;}
+  #gate input{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);
+    padding:12px 14px;border-radius:var(--radius);font-size:1rem;width:260px;text-align:center;
+  }
+  #gate button{
+    background:var(--gold);color:#141620;border:none;padding:12px 24px;border-radius:var(--radius);
+    font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;
+  }
+  #gateError{color:var(--atrasado);font-size:.85rem;min-height:18px;}
+
+  /* --- App shell --- */
+  #app{display:none;max-width:1200px;margin:0 auto;padding:24px 20px 60px;}
+  header.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  header.top h1{font-size:1.5rem;}
+  header.top .eyebrow{color:var(--gold);font-size:.72rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+
+  nav.tabs{display:flex;gap:8px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;}
+  nav.tabs button{
+    background:none;border:none;color:var(--muted);padding:12px 18px;cursor:pointer;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.95rem;
+    border-bottom:2px solid transparent;
+  }
+  nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .tabview{display:none;}
+  .tabview.active{display:block;}
+
+  /* --- Filters bar --- */
+  .filters{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+  .filters select, .filters input{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    padding:8px 10px;border-radius:8px;font-family:'Inter',sans-serif;font-size:.88rem;
+  }
+  .filters button.nav-btn{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--gold);
+    width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:1rem;
+  }
+  .filters .month-label{font-family:'Space Grotesk',sans-serif;font-weight:600;min-width:150px;text-align:center;}
+
+  /* --- Legend --- */
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:.78rem;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* --- Calendar --- */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{color:var(--muted);font-size:.72rem;text-transform:uppercase;text-align:center;padding-bottom:6px;letter-spacing:1px;}
+  .cal-cell{
+    background:var(--panel-2);border:1px solid var(--border);border-radius:8px;
+    min-height:92px;padding:6px;cursor:pointer;transition:border-color .15s;
+  }
+  .cal-cell:hover{border-color:var(--gold-dim);}
+  .cal-cell.empty{background:transparent;border:none;cursor:default;}
+  .cal-cell .daynum{font-size:.78rem;color:var(--muted);font-weight:600;}
+  .cal-cell.today .daynum{color:var(--gold);}
+  .cal-chip{
+    font-size:.68rem;padding:2px 5px;border-radius:4px;margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0f1117;font-weight:600;
+  }
+  .cal-chip.more{background:none;color:var(--muted);font-weight:400;}
+
+  /* --- Modal --- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:center;justify-content:center;z-index:500;padding:20px;
+  }
+  .modal-backdrop.show{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;
+  }
+  .modal h3{margin-bottom:14px;}
+  .modal .close-x{float:right;cursor:pointer;color:var(--muted);font-size:1.2rem;}
+  .occ-item{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+  .occ-item .row1{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .occ-item .title{font-weight:600;font-size:.9rem;}
+  .occ-item .meta{color:var(--muted);font-size:.72rem;margin-top:2px;}
+  .status-badge{font-size:.68rem;padding:3px 8px;border-radius:12px;font-weight:700;color:#0f1117;white-space:nowrap;}
+
+  /* --- Form --- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-grid.full{grid-template-columns:1fr;}
+  label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .field{margin-bottom:16px;}
+  input[type=text], input[type=date], select, textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif;font-size:.9rem;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  .radio-group{display:flex;gap:16px;}
+  .radio-group label{display:flex;align-items:center;gap:6px;color:var(--text);font-weight:400;cursor:pointer;}
+  .radio-group input{width:auto;}
+  .checkbox-days{display:flex;gap:10px;flex-wrap:wrap;}
+  .checkbox-days label{display:flex;align-items:center;gap:5px;color:var(--text);font-weight:400;font-size:.82rem;background:var(--panel-2);border:1px solid var(--border);padding:6px 10px;border-radius:6px;cursor:pointer;}
+  .checkbox-days input{width:auto;}
+  #recFields, #diasSemanaField, #dataFimField{display:none;}
+  button.primary{
+    background:var(--gold);color:#141620;border:none;padding:12px 28px;border-radius:8px;
+    font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:.92rem;
+  }
+  button.primary:hover{background:var(--gold-dim);}
+  #formMsg{margin-top:12px;font-size:.85rem;}
+
+  /* --- Table --- */
+  table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr.atrasada td{background:rgba(239,68,68,.07);}
+  td select{padding:6px 8px;font-size:.8rem;}
+  .btn-del{background:none;border:1px solid var(--border);color:var(--atrasado);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;}
+  .empty-state{color:var(--muted);text-align:center;padding:40px 0;font-size:.9rem;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div id="gate">
+  <div class="eyebrow" style="color:var(--gold);font-size:.7rem;letter-spacing:2px;">ARENA MOTORS</div>
+  <h1>Postagens Instagram</h1>
+  <input type="password" id="gatePass" placeholder="Senha de acesso" autocomplete="off">
+  <button id="gateBtn">Entrar</button>
+  <div id="gateError"></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Arena Motors</div>
+      <h1>Postagens Instagram</h1>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="calendario">Calendário</button>
+    <button class="tab-btn" data-tab="cadastrar">Cadastrar Postagem</button>
+    <button class="tab-btn" data-tab="detalhado">Postagens Detalhadas</button>
+  </nav>
+
+  <!-- CALENDARIO -->
+  <div class="tabview active" id="tab-calendario">
+    <div class="panel">
+      <div class="filters">
+        <button class="nav-btn" id="calPrev">‹</button>
+        <div class="month-label" id="calMonthLabel">—</div>
+        <button class="nav-btn" id="calNext">›</button>
+        <select id="calUnidade">
+          <option value="">Todas as unidades</option>
+          <option value="Sul">Sul</option>
+          <option value="Leste">Leste</option>
+          <option value="Sto. André">Sto. André</option>
+          <option value="Nações Unidas">Nações Unidas</option>
+          <option value="Institucional">Institucional</option>
+        </select>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--planejado)"></span>Planejado</span>
+        <span><span class="dot" style="background:var(--producao)"></span>Em produção</span>
+        <span><span class="dot" style="background:var(--agendado)"></span>Agendado</span>
+        <span><span class="dot" style="background:var(--publicado)"></span>Publicado</span>
+        <span><span class="dot" style="background:var(--atrasado)"></span>Atrasado</span>
+      </div>
+      <div class="cal-grid" id="calDow"></div>
+      <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- CADASTRAR -->
+  <div class="tabview" id="tab-cadastrar">
+    <div class="panel">
+      <h3 style="margin-bottom:18px;">Nova postagem</h3>
+      <div class="field">
+        <label>Título / descrição do post</label>
+        <input type="text" id="fTitulo" placeholder="Ex: Chegada Corolla Cross 2027">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Tipo de conteúdo</label>
+          <select id="fTipo">
+            <option>Reels</option>
+            <option>Carrossel</option>
+            <option>Feed</option>
+            <option>Story</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Unidade / Campanha</label>
+          <select id="fUnidade">
+            <option>Sul</option>
+            <option>Leste</option>
+            <option>Sto. André</option>
+            <option>Nações Unidas</option>
+            <option>Institucional</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Recorrência</label>
+        <div class="radio-group">
+          <label><input type="radio" name="recorrencia" value="unica" checked> Única</label>
+          <label><input type="radio" name="recorrencia" value="recorrente"> Recorrente</label>
+        </div>
+      </div>
+
+      <div class="form-grid" id="unicaFields">
+        <div class="field">
+          <label>Data da postagem</label>
+          <input type="date" id="fDataUnica">
+        </div>
+      </div>
+
+      <div id="recFields">
+        <div class="form-grid">
+          <div class="field">
+            <label>Frequência</label>
+            <select id="fFrequencia">
+              <option value="diaria">Diária</option>
+              <option value="semanal" selected>Semanal</option>
+              <option value="quinzenal">Quinzenal</option>
+              <option value="mensal">Mensal</option>
+            </select>
+          </div>
+          <div class="field" id="dataFimField">
+            <label>Data fim (opcional — padrão 6 meses)</label>
+            <input type="date" id="fDataFim">
+          </div>
+        </div>
+        <div class="field" id="diasSemanaField">
+          <label>Dias da semana</label>
+          <div class="checkbox-days">
+            <label><input type="checkbox" value="0"> Dom</label>
+            <label><input type="checkbox" value="1" checked> Seg</label>
+            <label><input type="checkbox" value="2"> Ter</label>
+            <label><input type="checkbox" value="3"> Qua</label>
+            <label><input type="checkbox" value="4"> Qui</label>
+            <label><input type="checkbox" value="5"> Sex</label>
+            <label><input type="checkbox" value="6"> Sáb</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Data início</label>
+          <input type="date" id="fDataInicio">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Observações</label>
+        <textarea id="fObs" placeholder="Roteiro, referência, briefing..."></textarea>
+      </div>
+
+      <button class="primary" id="btnSalvar">Salvar postagem</button>
+      <div id="formMsg"></div>
+    </div>
+  </div>
+
+  <!-- DETALHADO -->
+  <div class="tabview" id="tab-detalhado">
+    <div class="panel">
+      <div class="filters">
+        <select id="detMes"></select>
+        <select id="detAno"></select>
+        <select id="detUnidade">
+          <option value="">Todas as unidades</option>
+          <option value="Sul">Sul</option>
+          <option value="Leste">Leste</option>
+          <option value="Sto. André">Sto. André</option>
+          <option value="Nações Unidas">Nações Unidas</option>
+          <option value="Institucional">Institucional</option>
+        </select>
+        <select id="detStatus">
+          <option value="">Todos os status</option>
+          <option value="planejado">Planejado</option>
+          <option value="producao">Em produção</option>
+          <option value="agendado">Agendado</option>
+          <option value="publicado">Publicado</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th><th>Título</th><th>Tipo</th><th>Unidade</th><th>Status</th><th>Obs.</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="detBody"></tbody>
+        </table>
+        <div class="empty-state" id="detEmpty" style="display:none;">Nenhuma postagem encontrada para esse filtro.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DAY MODAL -->
+<div class="modal-backdrop" id="dayModal">
+  <div class="modal">
+    <span class="close-x" id="dayModalClose">✕</span>
+    <h3 id="dayModalTitle">—</h3>
+    <div id="dayModalBody"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  // =====================================================
+  // CONFIGURAÇÃO — cole aqui o MESMO firebaseConfig usado
+  // no Painel de Leads / RAI Performance (projeto arena-motors-dashboard)
+  // =====================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyADj6CWOUh66_G7qMoFmLxzorSRmwzhG3Q",
+    authDomain: "arena-motors-dashboard.firebaseapp.com",
+    projectId: "arena-motors-dashboard",
+    storageBucket: "arena-motors-dashboard.firebasestorage.app",
+    messagingSenderId: "668179364218",
+    appId: "1:668179364218:web:7fc08915222efb30c13ec3"
+  };
+  const SENHA = "arenamotors2026";
+  const COL_CONFIG = "ig_posts_config";
+  const COL_OCORRENCIAS = "ig_posts_ocorrencias";
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", agendado:"Agendado", publicado:"Publicado"};
+  const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", agendado:"var(--agendado)", publicado:"var(--publicado)"};
+  const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  let today = new Date();
+  let calYear = today.getFullYear();
+  let calMonth = today.getMonth(); // 0-indexed
+  let allOccCache = []; // cache of currently loaded month occurrences
+
+  // ---------- LOGIN GATE ----------
+  window.doLogin = async function(){
+    const pass = document.getElementById('gatePass').value;
+    if(pass !== SENHA){
+      document.getElementById('gateError').textContent = "Senha incorreta.";
+      return;
+    }
+    try{
+      await auth.signInAnonymously();
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      initApp();
+    }catch(e){
+      document.getElementById('gateError').textContent = "Erro de autenticação: " + e.message;
+    }
+  }
+  document.getElementById('gateBtn').addEventListener('click', doLogin);
+  document.getElementById('gatePass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+  function initApp(){
+    setupTabs();
+    setupForm();
+    setupCalendarControls();
+    setupDetalhadoFilters();
+    renderCalendar();
+    renderDetalhado();
+  }
+
+  // ---------- TABS ----------
+  function setupTabs(){
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tabview').forEach(v=>v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+        if(btn.dataset.tab === 'detalhado') renderDetalhado();
+        if(btn.dataset.tab === 'calendario') renderCalendar();
+      });
+    });
+  }
+
+  // ---------- FORM ----------
+  function setupForm(){
+    document.querySelectorAll('input[name=recorrencia]').forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const isRec = document.querySelector('input[name=recorrencia]:checked').value === 'recorrente';
+        document.getElementById('unicaFields').style.display = isRec ? 'none' : 'grid';
+        document.getElementById('recFields').style.display = isRec ? 'block' : 'none';
+      });
+    });
+    document.getElementById('fFrequencia').addEventListener('change', (e)=>{
+      document.getElementById('diasSemanaField').style.display = e.target.value === 'semanal' ? 'block' : 'none';
+    });
+    document.getElementById('btnSalvar').addEventListener('click', salvarPostagem);
+  }
+
+  function fmtDate(d){ // yyyy-mm-dd local
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function parseDate(str){ // 'yyyy-mm-dd' -> local Date at midnight
+    const [y,m,d] = str.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+
+  function gerarOcorrencias(base){
+    const ocorrencias = [];
+    if(base.recorrencia === 'unica'){
+      ocorrencias.push(base.dataInicio);
+      return ocorrencias;
+    }
+    const inicio = parseDate(base.dataInicio);
+    const fim = base.dataFim ? parseDate(base.dataFim) : new Date(inicio.getFullYear(), inicio.getMonth()+6, inicio.getDate());
+    if(base.frequencia === 'semanal'){
+      const dias = base.diasSemana.length ? base.diasSemana : [inicio.getDay()];
+      let cursor = new Date(inicio);
+      while(cursor <= fim){
+        if(dias.includes(cursor.getDay())) ocorrencias.push(fmtDate(cursor));
+        cursor.setDate(cursor.getDate()+1);
+      }
+    } else {
+      let stepDays = base.frequencia === 'diaria' ? 1 : base.frequencia === 'quinzenal' ? 14 : null;
+      if(stepDays){
+        let cursor = new Date(inicio);
+        while(cursor <= fim){
+          ocorrencias.push(fmtDate(cursor));
+          cursor.setDate(cursor.getDate()+stepDays);
+        }
+      } else { // mensal
+        let cursor = new Date(inicio);
+        while(cursor <= fim){
+          ocorrencias.push(fmtDate(cursor));
+          cursor.setMonth(cursor.getMonth()+1);
+        }
+      }
+    }
+    return ocorrencias;
+  }
+
+  async function salvarPostagem(){
+    const msg = document.getElementById('formMsg');
+    msg.style.color = 'var(--muted)';
+    msg.textContent = 'Salvando...';
+
+    const titulo = document.getElementById('fTitulo').value.trim();
+    const tipo = document.getElementById('fTipo').value;
+    const unidade = document.getElementById('fUnidade').value;
+    const obs = document.getElementById('fObs').value.trim();
+    const recorrencia = document.querySelector('input[name=recorrencia]:checked').value;
+
+    if(!titulo){
+      msg.style.color = 'var(--atrasado)';
+      msg.textContent = 'Preencha o título do post.';
+      return;
+    }
+
+    let base = {recorrencia};
+    if(recorrencia === 'unica'){
+      const data = document.getElementById('fDataUnica').value;
+      if(!data){ msg.style.color='var(--atrasado)'; msg.textContent='Selecione a data da postagem.'; return; }
+      base.dataInicio = data;
+    } else {
+      const dataInicio = document.getElementById('fDataInicio').value;
+      if(!dataInicio){ msg.style.color='var(--atrasado)'; msg.textContent='Selecione a data de início.'; return; }
+      base.dataInicio = dataInicio;
+      base.dataFim = document.getElementById('fDataFim').value || null;
+      base.frequencia = document.getElementById('fFrequencia').value;
+      base.diasSemana = Array.from(document.querySelectorAll('.checkbox-days input:checked')).map(c=>Number(c.value));
+    }
+
+    try{
+      const configRef = await db.collection(COL_CONFIG).add({
+        titulo, tipo, unidade, obs, recorrencia,
+        ...base,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      const datas = gerarOcorrencias(base);
+      const batch = db.batch();
+      datas.forEach(data=>{
+        const ref = db.collection(COL_OCORRENCIAS).doc();
+        batch.set(ref, {
+          configId: configRef.id, titulo, tipo, unidade, obs, data,
+          status: 'planejado',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      await batch.commit();
+
+      msg.style.color = 'var(--publicado)';
+      msg.textContent = `Salvo! ${datas.length} ocorrência(s) criada(s).`;
+      document.getElementById('fTitulo').value = '';
+      document.getElementById('fObs').value = '';
+      renderCalendar();
+    }catch(e){
+      msg.style.color = 'var(--atrasado)';
+      msg.textContent = 'Erro ao salvar: ' + e.message;
+    }
+  }
+
+  // ---------- CALENDAR ----------
+  function setupCalendarControls(){
+    const dowRow = document.getElementById('calDow');
+    DOW.forEach(d=>{
+      const el = document.createElement('div');
+      el.className = 'cal-dow';
+      el.textContent = d;
+      dowRow.appendChild(el);
+    });
+    document.getElementById('calPrev').addEventListener('click', ()=>{
+      calMonth--; if(calMonth<0){calMonth=11; calYear--;}
+      renderCalendar();
+    });
+    document.getElementById('calNext').addEventListener('click', ()=>{
+      calMonth++; if(calMonth>11){calMonth=0; calYear++;}
+      renderCalendar();
+    });
+    document.getElementById('calUnidade').addEventListener('change', renderCalendar);
+    document.getElementById('dayModalClose').addEventListener('click', ()=>{
+      document.getElementById('dayModal').classList.remove('show');
+    });
+  }
+
+  async function fetchOccurrences(year, month){ // month 0-indexed
+    const first = fmtDate(new Date(year, month, 1));
+    const last = fmtDate(new Date(year, month+1, 0));
+    const snap = await db.collection(COL_OCORRENCIAS)
+      .where('data', '>=', first).where('data', '<=', last).get();
+    return snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }
+
+  async function renderCalendar(){
+    document.getElementById('calMonthLabel').textContent = `${MESES[calMonth]} ${calYear}`;
+    const unidadeFiltro = document.getElementById('calUnidade').value;
+    let occs = await fetchOccurrences(calYear, calMonth);
+    if(unidadeFiltro) occs = occs.filter(o=>o.unidade === unidadeFiltro);
+    allOccCache = occs;
+
+    const byDay = {};
+    occs.forEach(o=>{ (byDay[o.data] = byDay[o.data] || []).push(o); });
+
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    const firstDow = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+    const todayStr = fmtDate(today);
+
+    for(let i=0;i<firstDow;i++){
+      const empty = document.createElement('div');
+      empty.className = 'cal-cell empty';
+      grid.appendChild(empty);
+    }
+    for(let day=1; day<=daysInMonth; day++){
+      const dateStr = fmtDate(new Date(calYear, calMonth, day));
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (dateStr === todayStr ? ' today' : '');
+      const num = document.createElement('div');
+      num.className = 'daynum';
+      num.textContent = day;
+      cell.appendChild(num);
+
+      const list = byDay[dateStr] || [];
+      list.slice(0,3).forEach(o=>{
+        const chip = document.createElement('div');
+        const atrasado = dateStr < todayStr && o.status !== 'publicado';
+        chip.className = 'cal-chip';
+        chip.style.background = atrasado ? 'var(--atrasado)' : STATUS_COLOR[o.status];
+        chip.textContent = o.titulo;
+        cell.appendChild(chip);
+      });
+      if(list.length > 3){
+        const more = document.createElement('div');
+        more.className = 'cal-chip more';
+        more.textContent = `+${list.length-3} mais`;
+        cell.appendChild(more);
+      }
+      if(list.length){
+        cell.addEventListener('click', ()=>openDayModal(dateStr, list));
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  function openDayModal(dateStr, list){
+    const modal = document.getElementById('dayModal');
+    const [y,m,d] = dateStr.split('-');
+    document.getElementById('dayModalTitle').textContent = `${d}/${m}/${y}`;
+    const body = document.getElementById('dayModalBody');
+    body.innerHTML = '';
+    list.forEach(o=>{
+      const atrasado = dateStr < fmtDate(today) && o.status !== 'publicado';
+      const item = document.createElement('div');
+      item.className = 'occ-item';
+      item.innerHTML = `
+        <div class="row1">
+          <div class="title">${o.titulo}</div>
+          <span class="status-badge" style="background:${atrasado ? 'var(--atrasado)' : STATUS_COLOR[o.status]}">${atrasado ? 'Atrasado' : STATUS_LABEL[o.status]}</span>
+        </div>
+        <div class="meta">${o.tipo} · ${o.unidade}${o.obs ? ' · ' + o.obs : ''}</div>
+      `;
+      body.appendChild(item);
+    });
+    modal.classList.add('show');
+  }
+
+  // ---------- DETALHADO ----------
+  function setupDetalhadoFilters(){
+    const mesSel = document.getElementById('detMes');
+    MESES.forEach((m,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i; opt.textContent = m;
+      mesSel.appendChild(opt);
+    });
+    mesSel.value = today.getMonth();
+
+    const anoSel = document.getElementById('detAno');
+    const anoAtual = today.getFullYear();
+    for(let y=anoAtual-1; y<=anoAtual+1; y++){
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      anoSel.appendChild(opt);
+    }
+    anoSel.value = anoAtual;
+
+    ['detMes','detAno','detUnidade','detStatus'].forEach(id=>{
+      document.getElementById(id).addEventListener('change', renderDetalhado);
+    });
+  }
+
+  async function renderDetalhado(){
+    const mes = Number(document.getElementById('detMes').value);
+    const ano = Number(document.getElementById('detAno').value);
+    const unidadeFiltro = document.getElementById('detUnidade').value;
+    const statusFiltro = document.getElementById('detStatus').value;
+
+    let occs = await fetchOccurrences(ano, mes);
+    if(unidadeFiltro) occs = occs.filter(o=>o.unidade === unidadeFiltro);
+    if(statusFiltro) occs = occs.filter(o=>o.status === statusFiltro);
+    occs.sort((a,b)=> a.data.localeCompare(b.data));
+
+    const tbody = document.getElementById('detBody');
+    tbody.innerHTML = '';
+    document.getElementById('detEmpty').style.display = occs.length ? 'none' : 'block';
+
+    occs.forEach(o=>{
+      const atrasado = o.data < fmtDate(today) && o.status !== 'publicado';
+      const tr = document.createElement('tr');
+      if(atrasado) tr.className = 'atrasada';
+      const [y,m,d] = o.data.split('-');
+      tr.innerHTML = `
+        <td>${d}/${m}/${y}</td>
+        <td>${o.titulo}</td>
+        <td>${o.tipo}</td>
+        <td>${o.unidade}</td>
+        <td></td>
+        <td style="max-width:180px;color:var(--muted);font-size:.8rem;">${o.obs || '—'}</td>
+        <td></td>
+      `;
+      const statusTd = tr.children[4];
+      const sel = document.createElement('select');
+      Object.keys(STATUS_LABEL).forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = STATUS_LABEL[s];
+        if(s === o.status) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', async ()=>{
+        await db.collection(COL_OCORRENCIAS).doc(o.id).update({status: sel.value});
+        renderDetalhado();
+        renderCalendar();
+      });
+      statusTd.appendChild(sel);
+
+      const delTd = tr.children[6];
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-del';
+      delBtn.textContent = 'Excluir';
+      delBtn.addEventListener('click', async ()=>{
+        if(confirm('Excluir esta postagem?')){
+          await db.collection(COL_OCORRENCIAS).doc(o.id).delete();
+          renderDetalhado();
+          renderCalendar();
+        }
+      });
+      delTd.appendChild(delBtn);
+
+      tbody.appendChild(tr);
+    });
+  }
+</script>
+</body>
+</html>
