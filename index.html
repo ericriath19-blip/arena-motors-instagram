@@ -27,6 +27,7 @@
     --atrasado:#ff6b4a;
     --cat-instagram:#E1306C;
     --cat-audiovisual:#f97316;
+    --cat-influencer:#9333ea;
     --font-display:'Space Grotesk', sans-serif;
     --font-body:'Inter', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
@@ -260,9 +261,10 @@
           <option value="Institucional">Institucional</option>
         </select>
         <select id="calCategoria">
-          <option value="">Instagram + Audiovisual</option>
+          <option value="">Todas as frentes</option>
           <option value="instagram">Instagram</option>
           <option value="audiovisual">Audiovisual</option>
+          <option value="influencer">Influencers</option>
         </select>
       </div>
       <div class="legend">
@@ -277,6 +279,7 @@
           <span class="cat-dot" style="background:var(--cat-instagram)"></span>Instagram
         </span>
         <span><span class="cat-dot" style="background:var(--cat-audiovisual)"></span>Audiovisual</span>
+        <span><span class="cat-dot" style="background:var(--cat-influencer)"></span>Influencers</span>
       </div>
       <div class="cal-grid" id="calDow"></div>
       <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
@@ -296,6 +299,7 @@
         <div class="radio-group">
           <label><input type="radio" name="fCategoria" value="instagram" checked><span class="cat-dot" style="background:var(--cat-instagram)"></span> Instagram</label>
           <label><input type="radio" name="fCategoria" value="audiovisual"><span class="cat-dot" style="background:var(--cat-audiovisual)"></span> Audiovisual</label>
+          <label><input type="radio" name="fCategoria" value="influencer"><span class="cat-dot" style="background:var(--cat-influencer)"></span> Influencers</label>
         </div>
       </div>
       <div class="form-grid">
@@ -402,9 +406,10 @@
           <option value="publicado">Publicado</option>
         </select>
         <select id="detCategoria">
-          <option value="">Instagram + Audiovisual</option>
+          <option value="">Todas as frentes</option>
           <option value="instagram">Instagram</option>
           <option value="audiovisual">Audiovisual</option>
+          <option value="influencer">Influencers</option>
         </select>
       </div>
       <div style="overflow-x:auto;">
@@ -462,6 +467,7 @@
       <div class="radio-group">
         <label><input type="radio" name="eCategoria" value="instagram"><span class="cat-dot" style="background:var(--cat-instagram)"></span> Instagram</label>
         <label><input type="radio" name="eCategoria" value="audiovisual"><span class="cat-dot" style="background:var(--cat-audiovisual)"></span> Audiovisual</label>
+        <label><input type="radio" name="eCategoria" value="influencer"><span class="cat-dot" style="background:var(--cat-influencer)"></span> Influencers</label>
       </div>
     </div>
     <div class="form-grid">
@@ -529,8 +535,8 @@
 
   const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", em_aprovacao:"Em aprovação", aprovado:"Aprovado", agendado:"Agendado", publicado:"Publicado"};
   const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", em_aprovacao:"var(--em-aprovacao)", aprovado:"var(--aprovado)", agendado:"var(--agendado)", publicado:"var(--publicado)"};
-  const CATEGORIA_LABEL = {instagram:"Instagram", audiovisual:"Audiovisual"};
-  const CATEGORIA_COLOR = {instagram:"var(--cat-instagram)", audiovisual:"var(--cat-audiovisual)"};
+  const CATEGORIA_LABEL = {instagram:"Instagram", audiovisual:"Audiovisual", influencer:"Influencers"};
+  const CATEGORIA_COLOR = {instagram:"var(--cat-instagram)", audiovisual:"var(--cat-audiovisual)", influencer:"var(--cat-influencer)"};
   const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
   const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
