@@ -25,6 +25,8 @@
     --agendado:#ffe066;
     --publicado:#3ddc97;
     --atrasado:#ff6b4a;
+    --cat-instagram:#E1306C;
+    --cat-audiovisual:#f97316;
     --font-display:'Space Grotesk', sans-serif;
     --font-body:'Inter', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
@@ -137,9 +139,9 @@
   .cal-cell .daynum{font-size:.78rem;color:var(--muted);font-weight:600;}
   .cal-cell.today .daynum{color:var(--gold);}
   .cal-chip{
-    font-size:.68rem;padding:2px 5px;border-radius:4px;margin-top:3px;
+    font-size:.68rem;padding:2px 5px 2px 7px;border-radius:4px;margin-top:3px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0a0a0a;font-weight:600;
-    width:100%;box-sizing:border-box;
+    width:100%;box-sizing:border-box;border-left:4px solid transparent;
   }
   .cal-chip.more{background:none;color:var(--muted);font-weight:400;}
 
@@ -174,6 +176,8 @@
   .radio-group{display:flex;gap:16px;}
   .radio-group label{display:flex;align-items:center;gap:6px;color:var(--text);font-weight:400;cursor:pointer;}
   .radio-group input{width:auto;}
+  .cat-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-left:2px;}
+  .cat-badge{font-size:.68rem;padding:2px 8px;border-radius:10px;font-weight:700;display:inline-block;border:1px solid;white-space:nowrap;}
   .checkbox-days{display:flex;gap:10px;flex-wrap:wrap;}
   .checkbox-days label{display:flex;align-items:center;gap:5px;color:var(--text);font-weight:400;font-size:.82rem;background:var(--panel-2);border:1px solid var(--border);padding:6px 10px;border-radius:6px;cursor:pointer;}
   .checkbox-days input{width:auto;}
@@ -255,6 +259,11 @@
           <option value="Nações Unidas">Nações Unidas</option>
           <option value="Institucional">Institucional</option>
         </select>
+        <select id="calCategoria">
+          <option value="">Instagram + Audiovisual</option>
+          <option value="instagram">Instagram</option>
+          <option value="audiovisual">Audiovisual</option>
+        </select>
       </div>
       <div class="legend">
         <span><span class="dot" style="background:var(--planejado)"></span>Planejado</span>
@@ -264,6 +273,10 @@
         <span><span class="dot" style="background:var(--agendado)"></span>Agendado</span>
         <span><span class="dot" style="background:var(--publicado)"></span>Publicado</span>
         <span><span class="dot" style="background:var(--atrasado)"></span>Atrasado</span>
+        <span style="margin-left:4px;border-left:1px solid var(--border);padding-left:16px;">
+          <span class="cat-dot" style="background:var(--cat-instagram)"></span>Instagram
+        </span>
+        <span><span class="cat-dot" style="background:var(--cat-audiovisual)"></span>Audiovisual</span>
       </div>
       <div class="cal-grid" id="calDow"></div>
       <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
@@ -277,6 +290,13 @@
       <div class="field">
         <label>Título / descrição do post</label>
         <input type="text" id="fTitulo" placeholder="Ex: Chegada Corolla Cross 2027">
+      </div>
+      <div class="field">
+        <label>Frente de produção</label>
+        <div class="radio-group">
+          <label><input type="radio" name="fCategoria" value="instagram" checked><span class="cat-dot" style="background:var(--cat-instagram)"></span> Instagram</label>
+          <label><input type="radio" name="fCategoria" value="audiovisual"><span class="cat-dot" style="background:var(--cat-audiovisual)"></span> Audiovisual</label>
+        </div>
       </div>
       <div class="form-grid">
         <div class="field">
@@ -381,12 +401,17 @@
           <option value="agendado">Agendado</option>
           <option value="publicado">Publicado</option>
         </select>
+        <select id="detCategoria">
+          <option value="">Instagram + Audiovisual</option>
+          <option value="instagram">Instagram</option>
+          <option value="audiovisual">Audiovisual</option>
+        </select>
       </div>
       <div style="overflow-x:auto;">
         <table>
           <thead>
             <tr>
-              <th>Data</th><th>Título</th><th>Tipo</th><th>Unidade</th><th>Status</th><th>Obs.</th><th></th>
+              <th>Data</th><th>Título</th><th>Frente</th><th>Tipo</th><th>Unidade</th><th>Status</th><th>Obs.</th><th></th>
             </tr>
           </thead>
           <tbody id="detBody"></tbody>
@@ -431,6 +456,13 @@
     <div class="field" style="margin-top:14px;">
       <label>Título / descrição do post</label>
       <input type="text" id="eTitulo">
+    </div>
+    <div class="field">
+      <label>Frente de produção</label>
+      <div class="radio-group">
+        <label><input type="radio" name="eCategoria" value="instagram"><span class="cat-dot" style="background:var(--cat-instagram)"></span> Instagram</label>
+        <label><input type="radio" name="eCategoria" value="audiovisual"><span class="cat-dot" style="background:var(--cat-audiovisual)"></span> Audiovisual</label>
+      </div>
     </div>
     <div class="form-grid">
       <div class="field">
@@ -497,6 +529,8 @@
 
   const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", em_aprovacao:"Em aprovação", aprovado:"Aprovado", agendado:"Agendado", publicado:"Publicado"};
   const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", em_aprovacao:"var(--em-aprovacao)", aprovado:"var(--aprovado)", agendado:"var(--agendado)", publicado:"var(--publicado)"};
+  const CATEGORIA_LABEL = {instagram:"Instagram", audiovisual:"Audiovisual"};
+  const CATEGORIA_COLOR = {instagram:"var(--cat-instagram)", audiovisual:"var(--cat-audiovisual)"};
   const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
   const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
@@ -618,6 +652,7 @@
     msg.textContent = 'Salvando...';
 
     const titulo = document.getElementById('fTitulo').value.trim();
+    const categoria = document.querySelector('input[name=fCategoria]:checked').value;
     const tipo = document.getElementById('fTipo').value;
     const unidade = document.getElementById('fUnidade').value;
     const obs = document.getElementById('fObs').value.trim();
@@ -645,7 +680,7 @@
 
     try{
       const configRef = await db.collection(COL_CONFIG).add({
-        titulo, tipo, unidade, obs, recorrencia,
+        titulo, categoria, tipo, unidade, obs, recorrencia,
         ...base,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -655,7 +690,7 @@
       datas.forEach(data=>{
         const ref = db.collection(COL_OCORRENCIAS).doc();
         batch.set(ref, {
-          configId: configRef.id, titulo, tipo, unidade, obs, data,
+          configId: configRef.id, titulo, categoria, tipo, unidade, obs, data,
           status: 'planejado',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -691,6 +726,7 @@
       renderCalendar();
     });
     document.getElementById('calUnidade').addEventListener('change', renderCalendar);
+    document.getElementById('calCategoria').addEventListener('change', renderCalendar);
     document.getElementById('dayModalClose').addEventListener('click', ()=>{
       document.getElementById('dayModal').classList.remove('show');
     });
@@ -707,8 +743,10 @@
   async function renderCalendar(){
     document.getElementById('calMonthLabel').textContent = `${MESES[calMonth]} ${calYear}`;
     const unidadeFiltro = document.getElementById('calUnidade').value;
+    const categoriaFiltro = document.getElementById('calCategoria').value;
     let occs = await fetchOccurrences(calYear, calMonth);
     if(unidadeFiltro) occs = occs.filter(o=>o.unidade === unidadeFiltro);
+    if(categoriaFiltro) occs = occs.filter(o=>o.categoria === categoriaFiltro);
     allOccCache = occs;
 
     const byDay = {};
@@ -740,6 +778,7 @@
         const atrasado = dateStr < todayStr && o.status !== 'publicado';
         chip.className = 'cal-chip';
         chip.style.background = atrasado ? 'var(--atrasado)' : STATUS_COLOR[o.status];
+        chip.style.borderLeftColor = CATEGORIA_COLOR[o.categoria] || 'transparent';
         chip.textContent = o.titulo;
         cell.appendChild(chip);
       });
@@ -756,6 +795,7 @@
     }
   }
 
+
   function openDayModal(dateStr, list){
     const modal = document.getElementById('dayModal');
     const [y,m,d] = dateStr.split('-');
@@ -771,7 +811,10 @@
           <div class="title">${o.titulo}</div>
           <span class="status-badge" style="background:${atrasado ? 'var(--atrasado)' : STATUS_COLOR[o.status]}">${atrasado ? 'Atrasado' : STATUS_LABEL[o.status]}</span>
         </div>
-        <div class="meta">${o.tipo} · ${o.unidade}${o.obs ? ' · ' + o.obs : ''}</div>
+        <div class="meta">
+          <span class="cat-badge" style="border-color:${CATEGORIA_COLOR[o.categoria]||'var(--border)'};color:${CATEGORIA_COLOR[o.categoria]||'var(--muted)'};">${CATEGORIA_LABEL[o.categoria]||'—'}</span>
+          &nbsp;${o.tipo} · ${o.unidade}${o.obs ? ' · ' + o.obs : ''}
+        </div>
       `;
       body.appendChild(item);
     });
@@ -797,7 +840,7 @@
     }
     anoSel.value = anoAtual;
 
-    ['detMes','detAno','detUnidade','detStatus'].forEach(id=>{
+    ['detMes','detAno','detUnidade','detStatus','detCategoria'].forEach(id=>{
       document.getElementById(id).addEventListener('change', renderDetalhado);
     });
   }
@@ -807,10 +850,12 @@
     const ano = Number(document.getElementById('detAno').value);
     const unidadeFiltro = document.getElementById('detUnidade').value;
     const statusFiltro = document.getElementById('detStatus').value;
+    const categoriaFiltro = document.getElementById('detCategoria').value;
 
     let occs = await fetchOccurrences(ano, mes);
     if(unidadeFiltro) occs = occs.filter(o=>o.unidade === unidadeFiltro);
     if(statusFiltro) occs = occs.filter(o=>o.status === statusFiltro);
+    if(categoriaFiltro) occs = occs.filter(o=>o.categoria === categoriaFiltro);
     occs.sort((a,b)=> a.data.localeCompare(b.data));
 
     const tbody = document.getElementById('detBody');
@@ -822,16 +867,19 @@
       const tr = document.createElement('tr');
       if(atrasado) tr.className = 'atrasada';
       const [y,m,d] = o.data.split('-');
+      const catCor = CATEGORIA_COLOR[o.categoria] || 'var(--border)';
+      const catLabel = CATEGORIA_LABEL[o.categoria] || '—';
       tr.innerHTML = `
         <td>${d}/${m}/${y}</td>
         <td>${o.titulo}</td>
+        <td><span class="cat-badge" style="border-color:${catCor};color:${catCor};">${catLabel}</span></td>
         <td>${o.tipo}</td>
         <td>${o.unidade}</td>
         <td></td>
         <td style="max-width:180px;color:var(--muted);font-size:.8rem;">${o.obs || '—'}</td>
         <td></td>
       `;
-      const statusTd = tr.children[4];
+      const statusTd = tr.children[5];
       const sel = document.createElement('select');
       Object.keys(STATUS_LABEL).forEach(s=>{
         const opt = document.createElement('option');
@@ -846,7 +894,7 @@
       });
       statusTd.appendChild(sel);
 
-      const delTd = tr.children[6];
+      const delTd = tr.children[7];
       const actionsWrap = document.createElement('div');
       actionsWrap.className = 'row-actions';
 
@@ -902,6 +950,8 @@
     editingId = o.id;
     editingConfigId = o.configId;
     document.getElementById('eTitulo').value = o.titulo || '';
+    const catRadio = document.querySelector(`input[name=eCategoria][value="${o.categoria || 'instagram'}"]`);
+    if(catRadio) catRadio.checked = true;
     document.getElementById('eTipo').value = o.tipo || 'Reels';
     document.getElementById('eUnidade').value = o.unidade || 'Sul';
     document.getElementById('eData').value = o.data || '';
@@ -939,6 +989,7 @@
     }
     const escopoRadio = document.querySelector('input[name=escopoEdicao]:checked');
     const isSerie = escopoRadio && escopoRadio.value === 'serie';
+    const categoria = document.querySelector('input[name=eCategoria]:checked').value;
     const tipo = document.getElementById('eTipo').value;
     const unidade = document.getElementById('eUnidade').value;
     const obs = document.getElementById('eObs').value.trim();
@@ -949,18 +1000,18 @@
     try{
       if(isSerie && editingConfigId){
         // atualiza o config e todas as ocorrências da série
-        await db.collection(COL_CONFIG).doc(editingConfigId).update({titulo, tipo, unidade, obs});
+        await db.collection(COL_CONFIG).doc(editingConfigId).update({titulo, categoria, tipo, unidade, obs});
         const snap = await db.collection(COL_OCORRENCIAS).where('configId', '==', editingConfigId).get();
         const batch = db.batch();
         snap.docs.forEach(d=>{
-          batch.update(d.ref, {titulo, tipo, unidade, obs});
+          batch.update(d.ref, {titulo, categoria, tipo, unidade, obs});
         });
         await batch.commit();
         msg.style.color = 'var(--publicado)';
         msg.textContent = `Série atualizada! ${snap.docs.length} postagem(ns) alterada(s).`;
       }else{
         await db.collection(COL_OCORRENCIAS).doc(editingId).update({
-          titulo, tipo, unidade, obs,
+          titulo, categoria, tipo, unidade, obs,
           data: document.getElementById('eData').value,
           status: document.getElementById('eStatus').value
         });
