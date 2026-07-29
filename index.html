@@ -201,6 +201,18 @@
   .row-actions{display:flex;gap:0;white-space:nowrap;}
   .empty-state{color:var(--muted);text-align:center;padding:40px 0;font-size:.9rem;}
 
+  .cat-legend{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+  .cat-legend-title{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .cat-legend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .cat-legend-item{display:flex;gap:10px;align-items:flex-start;}
+  .cat-legend-item .cat-dot{width:10px;height:10px;margin-top:5px;flex-shrink:0;}
+  .cat-legend-name{font-family:var(--font-display);font-weight:700;font-size:.88rem;margin-bottom:3px;}
+  .cat-legend-desc{font-size:.78rem;color:var(--muted);line-height:1.5;}
+  .cat-legend-desc em{color:var(--text-dim);font-style:normal;}
+  @media (max-width:768px){
+    .cat-legend-grid{grid-template-columns:1fr;}
+  }
+
   @media (max-width:640px){
     #app{padding:16px 12px 40px;}
     .panel{padding:14px;overflow-x:auto;}
@@ -275,14 +287,36 @@
         <span><span class="dot" style="background:var(--agendado)"></span>Agendado</span>
         <span><span class="dot" style="background:var(--publicado)"></span>Publicado</span>
         <span><span class="dot" style="background:var(--atrasado)"></span>Atrasado</span>
-        <span style="margin-left:4px;border-left:1px solid var(--border);padding-left:16px;">
-          <span class="cat-dot" style="background:var(--cat-instagram)"></span>Instagram
-        </span>
-        <span><span class="cat-dot" style="background:var(--cat-audiovisual)"></span>Audiovisual</span>
-        <span><span class="cat-dot" style="background:var(--cat-influencer)"></span>Influencers</span>
       </div>
       <div class="cal-grid" id="calDow"></div>
       <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
+
+      <div class="cat-legend">
+        <div class="cat-legend-title">Frentes de produção</div>
+        <div class="cat-legend-grid">
+          <div class="cat-legend-item">
+            <span class="cat-dot" style="background:var(--cat-instagram)"></span>
+            <div>
+              <div class="cat-legend-name">Instagram</div>
+              <div class="cat-legend-desc">Postagens estáticas e vídeos para o feed.</div>
+            </div>
+          </div>
+          <div class="cat-legend-item">
+            <span class="cat-dot" style="background:var(--cat-audiovisual)"></span>
+            <div>
+              <div class="cat-legend-name">Audiovisual</div>
+              <div class="cat-legend-desc">Vídeos de ofertas, institucional e divulgação das lojas. <em>Não conta como produção de conteúdo Agência Flexível para o Instagram.</em></div>
+            </div>
+          </div>
+          <div class="cat-legend-item">
+            <span class="cat-dot" style="background:var(--cat-influencer)"></span>
+            <div>
+              <div class="cat-legend-name">Influencers</div>
+              <div class="cat-legend-desc">Conteúdos criados por influenciadores parceiros. <em>Não conta como produção de conteúdo Agência Flexível para o Instagram.</em></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
