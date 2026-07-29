@@ -27,7 +27,7 @@
     --atrasado:#ff6b4a;
     --cat-instagram:#E1306C;
     --cat-audiovisual:#f97316;
-    --cat-influencer:#9333ea;
+    --cat-influencer:#38bdf8;
     --font-display:'Space Grotesk', sans-serif;
     --font-body:'Inter', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
@@ -201,13 +201,17 @@
   .row-actions{display:flex;gap:0;white-space:nowrap;}
   .empty-state{color:var(--muted);text-align:center;padding:40px 0;font-size:.9rem;}
 
-  .cat-legend{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
-  .cat-legend-title{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
-  .cat-legend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-  .cat-legend-item{display:flex;gap:10px;align-items:flex-start;}
-  .cat-legend-item .cat-dot{width:10px;height:10px;margin-top:5px;flex-shrink:0;}
-  .cat-legend-name{font-family:var(--font-display);font-weight:700;font-size:.88rem;margin-bottom:3px;}
-  .cat-legend-desc{font-size:.78rem;color:var(--muted);line-height:1.5;}
+  .cat-legend{
+    margin-top:24px;background:var(--panel-2);border:1px solid var(--border);border-radius:12px;
+    padding:22px 24px;position:relative;overflow:hidden;
+  }
+  .cat-legend::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--gold);}
+  .cat-legend-title{font-family:var(--font-mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;font-weight:600;}
+  .cat-legend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .cat-legend-item{display:flex;gap:12px;align-items:flex-start;}
+  .cat-legend-item .cat-dot{width:14px;height:14px;margin-top:4px;flex-shrink:0;box-shadow:0 0 0 3px rgba(255,255,255,0.04);}
+  .cat-legend-name{font-family:var(--font-display);font-weight:700;font-size:1.05rem;margin-bottom:5px;}
+  .cat-legend-desc{font-size:.85rem;color:var(--muted);line-height:1.55;}
   .cat-legend-desc em{color:var(--text-dim);font-style:normal;}
   @media (max-width:768px){
     .cat-legend-grid{grid-template-columns:1fr;}
