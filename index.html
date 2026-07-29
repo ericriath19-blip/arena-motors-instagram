@@ -416,6 +416,18 @@
   <div class="modal">
     <span class="close-x" id="editModalClose">✕</span>
     <h3>Editar postagem</h3>
+
+    <div class="field" id="escopoField" style="margin-top:14px;display:none;">
+      <label>Essa postagem faz parte de uma recorrência. Aplicar alteração a:</label>
+      <div class="radio-group">
+        <label><input type="radio" name="escopoEdicao" value="apenas" checked> Apenas esta</label>
+        <label><input type="radio" name="escopoEdicao" value="serie"> Toda a recorrência</label>
+      </div>
+    </div>
+    <div id="escopoSerieAviso" style="display:none;font-size:.78rem;color:var(--muted);margin:-8px 0 16px;">
+      Título, tipo, unidade e observações serão aplicados a todas as ocorrências dessa série. Data e status continuam individuais por postagem.
+    </div>
+
     <div class="field" style="margin-top:14px;">
       <label>Título / descrição do post</label>
       <input type="text" id="eTitulo">
@@ -441,11 +453,11 @@
         </select>
       </div>
     </div>
-    <div class="field">
+    <div class="field" id="eDataField">
       <label>Data da postagem</label>
       <input type="date" id="eData">
     </div>
-    <div class="field">
+    <div class="field" id="eStatusField">
       <label>Status</label>
       <select id="eStatus"></select>
     </div>
@@ -863,6 +875,7 @@
 
   // ---------- EDIT MODAL ----------
   let editingId = null;
+  let editingConfigId = null;
 
   function setupEditModal(){
     const statusSel = document.getElementById('eStatus');
@@ -874,11 +887,20 @@
     document.getElementById('editModalClose').addEventListener('click', ()=>{
       document.getElementById('editModal').classList.remove('show');
     });
+    document.querySelectorAll('input[name=escopoEdicao]').forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const isSerie = document.querySelector('input[name=escopoEdicao]:checked').value === 'serie';
+        document.getElementById('eDataField').style.display = isSerie ? 'none' : 'block';
+        document.getElementById('eStatusField').style.display = isSerie ? 'none' : 'block';
+        document.getElementById('escopoSerieAviso').style.display = isSerie ? 'block' : 'none';
+      });
+    });
     document.getElementById('btnSalvarEdicao').addEventListener('click', salvarEdicao);
   }
 
-  function openEditModal(o){
+  async function openEditModal(o){
     editingId = o.id;
+    editingConfigId = o.configId;
     document.getElementById('eTitulo').value = o.titulo || '';
     document.getElementById('eTipo').value = o.tipo || 'Reels';
     document.getElementById('eUnidade').value = o.unidade || 'Sul';
@@ -886,7 +908,25 @@
     document.getElementById('eStatus').value = o.status || 'planejado';
     document.getElementById('eObs').value = o.obs || '';
     document.getElementById('editMsg').textContent = '';
+
+    // reset escopo pro padrão "apenas esta"
+    document.querySelector('input[name=escopoEdicao][value=apenas]').checked = true;
+    document.getElementById('eDataField').style.display = 'block';
+    document.getElementById('eStatusField').style.display = 'block';
+    document.getElementById('escopoSerieAviso').style.display = 'none';
+
     document.getElementById('editModal').classList.add('show');
+
+    // checa se essa ocorrência pertence a uma série recorrente
+    document.getElementById('escopoField').style.display = 'none';
+    if(o.configId){
+      try{
+        const configSnap = await db.collection(COL_CONFIG).doc(o.configId).get();
+        if(configSnap.exists && configSnap.data().recorrencia === 'recorrente'){
+          document.getElementById('escopoField').style.display = 'block';
+        }
+      }catch(e){ /* silencioso: se não achar o config, trata como postagem única */ }
+    }
   }
 
   async function salvarEdicao(){
@@ -897,20 +937,38 @@
       msg.textContent = 'Preencha o título.';
       return;
     }
+    const escopoRadio = document.querySelector('input[name=escopoEdicao]:checked');
+    const isSerie = escopoRadio && escopoRadio.value === 'serie';
+    const tipo = document.getElementById('eTipo').value;
+    const unidade = document.getElementById('eUnidade').value;
+    const obs = document.getElementById('eObs').value.trim();
+
     msg.style.color = 'var(--muted)';
     msg.textContent = 'Salvando...';
+
     try{
-      await db.collection(COL_OCORRENCIAS).doc(editingId).update({
-        titulo,
-        tipo: document.getElementById('eTipo').value,
-        unidade: document.getElementById('eUnidade').value,
-        data: document.getElementById('eData').value,
-        status: document.getElementById('eStatus').value,
-        obs: document.getElementById('eObs').value.trim()
-      });
-      document.getElementById('editModal').classList.remove('show');
+      if(isSerie && editingConfigId){
+        // atualiza o config e todas as ocorrências da série
+        await db.collection(COL_CONFIG).doc(editingConfigId).update({titulo, tipo, unidade, obs});
+        const snap = await db.collection(COL_OCORRENCIAS).where('configId', '==', editingConfigId).get();
+        const batch = db.batch();
+        snap.docs.forEach(d=>{
+          batch.update(d.ref, {titulo, tipo, unidade, obs});
+        });
+        await batch.commit();
+        msg.style.color = 'var(--publicado)';
+        msg.textContent = `Série atualizada! ${snap.docs.length} postagem(ns) alterada(s).`;
+      }else{
+        await db.collection(COL_OCORRENCIAS).doc(editingId).update({
+          titulo, tipo, unidade, obs,
+          data: document.getElementById('eData').value,
+          status: document.getElementById('eStatus').value
+        });
+      }
       renderDetalhado();
       renderCalendar();
+      if(!isSerie) document.getElementById('editModal').classList.remove('show');
+      else setTimeout(()=> document.getElementById('editModal').classList.remove('show'), 900);
     }catch(e){
       msg.style.color = 'var(--atrasado)';
       msg.textContent = 'Erro ao salvar: ' + e.message;
