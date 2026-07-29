@@ -140,9 +140,9 @@
   .cal-cell .daynum{font-size:.78rem;color:var(--muted);font-weight:600;}
   .cal-cell.today .daynum{color:var(--gold);}
   .cal-chip{
-    font-size:.68rem;padding:2px 5px 2px 7px;border-radius:4px;margin-top:3px;
+    font-size:.68rem;padding:4px 5px 2px 5px;border-radius:4px;margin-top:3px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0a0a0a;font-weight:600;
-    width:100%;box-sizing:border-box;border-left:4px solid transparent;
+    width:100%;box-sizing:border-box;border-top:5px solid transparent;
   }
   .cal-chip.more{background:none;color:var(--muted);font-weight:400;}
 
@@ -818,7 +818,7 @@
         const atrasado = dateStr < todayStr && o.status !== 'publicado';
         chip.className = 'cal-chip';
         chip.style.background = atrasado ? 'var(--atrasado)' : STATUS_COLOR[o.status];
-        chip.style.borderLeftColor = CATEGORIA_COLOR[o.categoria] || 'transparent';
+        chip.style.borderTopColor = CATEGORIA_COLOR[o.categoria] || 'transparent';
         chip.textContent = o.titulo;
         cell.appendChild(chip);
       });
