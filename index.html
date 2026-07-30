@@ -25,6 +25,8 @@
     --agendado:#ffe066;
     --publicado:#3ddc97;
     --atrasado:#ff6b4a;
+    --reagendado:#d97706;
+    --cancelado:#a8a29e;
     --cat-instagram:#E1306C;
     --cat-audiovisual:#f97316;
     --cat-influencer:#38bdf8;
@@ -286,7 +288,9 @@
         <span><span class="dot" style="background:var(--aprovado)"></span>Aprovado</span>
         <span><span class="dot" style="background:var(--agendado)"></span>Agendado</span>
         <span><span class="dot" style="background:var(--publicado)"></span>Publicado</span>
+        <span><span class="dot" style="background:var(--reagendado)"></span>Reagendado</span>
         <span><span class="dot" style="background:var(--atrasado)"></span>Atrasado</span>
+        <span><span class="dot" style="background:var(--cancelado)"></span>Cancelado</span>
       </div>
       <div class="cal-grid" id="calDow"></div>
       <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
@@ -438,6 +442,9 @@
           <option value="aprovado">Aprovado</option>
           <option value="agendado">Agendado</option>
           <option value="publicado">Publicado</option>
+          <option value="reagendado">Reagendado</option>
+          <option value="atrasado">Atrasado</option>
+          <option value="cancelado">Cancelado</option>
         </select>
         <select id="detCategoria">
           <option value="">Todas as frentes</option>
@@ -567,8 +574,9 @@
   const db = firebase.firestore();
   const auth = firebase.auth();
 
-  const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", em_aprovacao:"Em aprovação", aprovado:"Aprovado", agendado:"Agendado", publicado:"Publicado"};
-  const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", em_aprovacao:"var(--em-aprovacao)", aprovado:"var(--aprovado)", agendado:"var(--agendado)", publicado:"var(--publicado)"};
+  const STATUS_LABEL = {planejado:"Planejado", producao:"Em produção", em_aprovacao:"Em aprovação", aprovado:"Aprovado", agendado:"Agendado", publicado:"Publicado", reagendado:"Reagendado", atrasado:"Atrasado", cancelado:"Cancelado"};
+  const STATUS_COLOR = {planejado:"var(--planejado)", producao:"var(--producao)", em_aprovacao:"var(--em-aprovacao)", aprovado:"var(--aprovado)", agendado:"var(--agendado)", publicado:"var(--publicado)", reagendado:"var(--reagendado)", atrasado:"var(--atrasado)", cancelado:"var(--cancelado)"};
+  const STATUS_EXCLUI_ATRASO_AUTOMATICO = ['publicado', 'cancelado', 'reagendado', 'atrasado'];
   const CATEGORIA_LABEL = {instagram:"Instagram", audiovisual:"Audiovisual", influencer:"Influencers"};
   const CATEGORIA_COLOR = {instagram:"var(--cat-instagram)", audiovisual:"var(--cat-audiovisual)", influencer:"var(--cat-influencer)"};
   const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -815,7 +823,7 @@
       const list = byDay[dateStr] || [];
       list.slice(0,3).forEach(o=>{
         const chip = document.createElement('div');
-        const atrasado = dateStr < todayStr && o.status !== 'publicado';
+        const atrasado = dateStr < todayStr && !STATUS_EXCLUI_ATRASO_AUTOMATICO.includes(o.status);
         chip.className = 'cal-chip';
         chip.style.background = atrasado ? 'var(--atrasado)' : STATUS_COLOR[o.status];
         chip.style.borderTopColor = CATEGORIA_COLOR[o.categoria] || 'transparent';
@@ -843,7 +851,7 @@
     const body = document.getElementById('dayModalBody');
     body.innerHTML = '';
     list.forEach(o=>{
-      const atrasado = dateStr < fmtDate(today) && o.status !== 'publicado';
+      const atrasado = dateStr < fmtDate(today) && !STATUS_EXCLUI_ATRASO_AUTOMATICO.includes(o.status);
       const item = document.createElement('div');
       item.className = 'occ-item';
       item.innerHTML = `
@@ -896,14 +904,14 @@
     if(unidadeFiltro) occs = occs.filter(o=>o.unidade === unidadeFiltro);
     if(statusFiltro) occs = occs.filter(o=>o.status === statusFiltro);
     if(categoriaFiltro) occs = occs.filter(o=>o.categoria === categoriaFiltro);
-    occs.sort((a,b)=> a.data.localeCompare(b.data));
+    occs.sort((a,b)=> b.data.localeCompare(a.data));
 
     const tbody = document.getElementById('detBody');
     tbody.innerHTML = '';
     document.getElementById('detEmpty').style.display = occs.length ? 'none' : 'block';
 
     occs.forEach(o=>{
-      const atrasado = o.data < fmtDate(today) && o.status !== 'publicado';
+      const atrasado = o.data < fmtDate(today) && !STATUS_EXCLUI_ATRASO_AUTOMATICO.includes(o.status);
       const tr = document.createElement('tr');
       if(atrasado) tr.className = 'atrasada';
       const [y,m,d] = o.data.split('-');
